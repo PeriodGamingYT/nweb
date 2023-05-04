@@ -101,6 +101,12 @@ int main(int argc, char **argv) {
 	}
 
 	char *directory = argv[1];
+
+	// dirty hack.
+	if(directory[strlen(directory) - 1] == '/') {
+		directory[strlen(directory) - 1] = 0;
+	}
+	
 	int listen_fd, conn_fd, n;
 	struct sockaddr_in server_addr;
 	uint8_t buffer[MAX_LINE + 1];

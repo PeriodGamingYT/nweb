@@ -12,3 +12,6 @@ run:
 	make
 	clear
 	./nweb .
+
+install:
+	sudo cp nweb /usr/local/bin

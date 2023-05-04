@@ -1,5 +1,6 @@
 nweb - Nathans WEB server
 Usage: nweb directory
 I am tired of using soydev NodeJS/Express web servers.
-A chad web server would just use C.
+A chad web server would just use C (175 LOC).
 This project took 1 day lol.
+I also have no idea how this kind of works.
