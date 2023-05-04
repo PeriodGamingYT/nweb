@@ -63,10 +63,36 @@ void free_args(args_t *args) {
 }
 
 char *file_dump(char *file_name) {
+	if(file_name == NULL) {
+		return NULL;
+	}
+
+	char *result = malloc(0);
+	int result_size = 0;
+	FILE *file = fopen(file_name, "r");
+	if(file == NULL) {
+		return NULL;
+	}
 	
+	while(!feof(file)) {
+		char new_char = fgetc(file);
+		if(new_char == 0) {
+			continue;
+		}
+
+		if(feof(file)) {
+			break;
+		}
+		
+		result = (char *) realloc(result, ++result_size);
+		result[result_size - 1] = new_char;
+	}
+
+	fclose(file);
+	return result;
 }
 
-#define PORT 3000
+#define PORT 18000
 #define MAX_LINE 4096
 #define MAX_LINES 1024
 int main(int argc, char **argv) {
@@ -110,10 +136,6 @@ int main(int argc, char **argv) {
 		conn_fd = accept(listen_fd, (struct sockaddr *) NULL, NULL);
 		memset(recv_line, 0, MAX_LINE);
 		while((n = read(conn_fd, recv_line, MAX_LINE - 1)) > 0) {
-			#ifdef LOG
-				printf("read %s\n", recv_line);
-			#endif
-
 			memcpy(recv_lines[recv_n++], recv_line, MAX_LINE);
 			if(recv_line[n - 1] == '\n') {
 				break;
@@ -127,29 +149,38 @@ int main(int argc, char **argv) {
 		}
 
 		args_t request_args = split_string(recv_lines[0], " ");
-		char *request = NULL;
-		if(strcmp(request_args.args[2], "GET") == 0) {
-			int length = (strlen(directory) - 1) + (strlen(request_args.args[3]) - 1) + 2;
-			request = (char *) malloc(sizeof(char) * length);
-			memset(request, 0, sizeof(char) * length);
-			snprintf(
-				request,
-				sizeof(char) * length,
-				"%s/%s",
-				directory,
-				request_args.args[3]
+		char *request = NULL;	
+		if(strcmp(request_args.args[0], "GET") == 0) {
+			int length = strlen(directory) + strlen(request_args.args[1]) + 1;
+			request = (char *) malloc(length);
+			memset(request, 0, length);
+			memcpy(request, directory, strlen(directory));
+			memcpy(
+				&request[strlen(directory)], 
+				request_args.args[1], 
+				strlen(request_args.args[1])
 			);
+			
+			request[length - 1] = 0;
+			#ifdef LOG
+				printf("directory %s\n", request);
+			#endif
+		}
+
+		char *dump = file_dump(request);
+		if(request != NULL) {
+			free(request);
 		}
 		
 		snprintf(
 			(char *) buffer,
 			sizeof(buffer), 
 			"HTTP/1.0 200 OK\r\n\r\n%s",
-			file_dump(request)
+			dump
 		);
 
-		if(request != NULL) {
-			free(request);
+		if(dump != NULL) {
+			free(dump);
 		}
 		
 		free_args(&request_args);
