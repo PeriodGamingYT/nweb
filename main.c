@@ -193,6 +193,7 @@ int main(int argc, char **argv) {
 		write(conn_fd, (char *) buffer, strlen((char *) buffer));
 		close(conn_fd);
 	}
-	
+
+	close(listen_fd);
 	return 0;
 }
